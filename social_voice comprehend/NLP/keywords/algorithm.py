@@ -306,3 +306,4 @@ class Rake:
             word_score[item] = word_degree[item] / word_frequency[item]
 
         return word_score
+# test
