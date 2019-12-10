@@ -2,12 +2,15 @@ from __future__ import division
 
 import pandas as pd
 import re
+import nltk
 try:
-    from nltk.corpus import stopwords
+    from nltk.stem import WordNetLemmatizer
+    wnl = WordNetLemmatizer()
 except:
     nltk.download('punkt')
     nltk.download('stopwords')
     nltk.download('wordnet')
+    nltk.download('averaged_perceptron_tagger')
 from nltk.tokenize import word_tokenize
 from nltk.corpus import stopwords
 from nltk.stem import WordNetLemmatizer
