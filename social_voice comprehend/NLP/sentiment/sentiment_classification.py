@@ -23,6 +23,8 @@ warnings.filterwarnings('ignore')
 
 vectorizer = joblib.load(os.path.join(FILE,"vectorizer.pkl"))
 model = joblib.load(os.path.join(FILE,"model.pkl"))
+vectorizer_zh = joblib.load(os.path.join(FILE,"vectorizer_zh.pkl"))
+model_zh = joblib.load(os.path.join(FILE,"model_zh.pkl"))
 
 # data preprocessing
 def data_clearing(comment):
@@ -104,25 +106,43 @@ def lemmatize_all(sentence):
     return ' '.join(lem_list)
 
 
-def pre_processing(comment):
-    comment_T = data_clearing(comment)
-    lan = classify_language(comment_T)
+# % Chinese
+# import chinese stopwords
+sw_S = [line.rstrip('\n').strip() for line in open(os.path.join(path, 'F_total_tradition_stopwords_sentiment.txt'), 'r', encoding='utf-8-sig')]
+
+# update cantonese dictionary in jieba
+jieba.load_userdict(os.path.join(path, 'F_Cantonese_dictionary2.txt'))
+
+# Chinese segmentation
+def chinese_segmentation(comment):
+    comment = jieba.lcut(comment)
+    comment = [w.strip() for w in comment if w.strip() not in sw_S]
+    comment = ' '.join(comment)
+    return comment
+
+def pre_processing(comment, lan):
     if lan == 'en':
         return (lemmatize_all(remove_sw(remove_info(comment_T))))
     else:
-        raise Exception("Invalid input: only English is supported so far.")
+        return chinese_segmentation(remove_info(comment_T))
 
 
 def sentiment_classify(comment):
-    X_test0 = [pre_processing(str(comment))]
-    X_test = vectorizer.transform(X_test0)
-    result = int(model.predict(X_test))
+    comment_T = data_clearing(comment)
+    lan = classify_language(comment_T)
+    X_test0 = [pre_processing(str(comment), lan)]
+    
+    if lan == 'en':
+        X_test = vectorizer.transform(X_test0)
+        result = int(model.predict(X_test))
+    else:
+        X_test = vectorizer_zh.transform(X_test0)
+        result = int(model_zh.predict(X_test))
+        
     if result == 1:
         return ('positive')
     else:
         return ('negative')
-#    else:
-#        raise Exception("Invalid input: input must be a string.")
 
 ## usage
 # sentiment_classify('inMotion is a very good app! It makes life easier')
