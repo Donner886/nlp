@@ -1,20 +1,22 @@
+from __future__ import division
 #import operator
 from collections import defaultdict
 
 import numpy as np
-#import jieba
-#import jieba.posseg as pseg
+import jieba
 import operator
 from collections import Counter
-
-#from multi_rake.Word import Word
+import os
+from NLP.keywords.Word import Word
 from NLP.keywords.stopwords import STOPWORDS
-#from multi_rake.delimiter import delimiter
+from NLP.keywords.delimiter import delimiter
 from NLP.keywords.utils import (
     keep_only_letters, separate_words, split_sentences,
 )
 
-#jieba.load_userdict("D:\\NLP\\Cantonese dictionary\\F_Cantonese_dictionary.txt")
+path = os.path.dirname(__file__)
+jieba.load_userdict(os.path.join(path,"F_Cantonese_dictionary2.txt"))
+import jieba.posseg as pseg
 
 class Rake:
     def __init__(
@@ -111,92 +113,99 @@ class Rake:
         
         # only for Chinese
         else:
-            raise Exception("Invalid input: only English is supported so far.")
+            # Construct Stopword Lib
+            if self.stopwords:
+                swLibList = self.stopwords
+    
+            else:
+    
+                if self.language_code in STOPWORDS:
+                    swLibList = STOPWORDS[self.language_code]
 #            # Construct Stopword Lib
 #            swLibList = STOPWORDS[self.language_code]
-#            # Construct Phrase Deliminator Lib
-#            conjLibList = delimiter[self.language_code]
-#        
-#            # Cut Text
-#            rawtextList = pseg.cut(text)
-#        
-#            # Construct List of Phrases and Preliminary textList
-#            textList = []
-#            listofSingleWord = dict()
-#            lastWord = ''
-#            poSPrty = ['m','x','uj','ul','mq','u','v','f']
-#            meaningfulCount = 0
-#            checklist = []
-#            for eachWord, flag in rawtextList:
-#                checklist.append([eachWord,flag])
-#                if eachWord in conjLibList or not self._notNumStr(eachWord) or eachWord in swLibList or flag in poSPrty or eachWord == '\n':
-#                    if lastWord != '|':
-#                        textList.append("|")
-#                        lastWord = "|"
-#                elif eachWord not in swLibList and eachWord != '\n':
-#                    textList.append(eachWord)
-#                    meaningfulCount += 1
-#                    if eachWord not in listofSingleWord:
-#                        listofSingleWord[eachWord] = Word(eachWord)
-#                    lastWord = ''
-#        
-#            # Construct List of list that has phrases as wrds
-#            newList = []
-#            tempList = []
-#            for everyWord in textList:
-#                if everyWord != '|':
-#                    tempList.append(everyWord)
-#                else:
-#                    newList.append(tempList)
-#                    tempList = []
-#        
-#            tempStr = ''
-#            for everyWord in textList:
-#                if everyWord != '|':
-#                    tempStr += everyWord + '|'
-#                else:
-#                    if tempStr[:-1] not in listofSingleWord:
-#                        listofSingleWord[tempStr[:-1]] = Word(tempStr[:-1])
-#                        tempStr = ''
-#        
-#            # Update the entire List
-#            for everyPhrase in newList:
-#                res = ''
-#                for everyWord in everyPhrase:
-#                    listofSingleWord[everyWord].updateOccur(len(everyPhrase))
-#                    res += everyWord + '|'
-#                phraseKey = res[:-1]
-#                if phraseKey not in listofSingleWord:
-#                    listofSingleWord[phraseKey] = Word(phraseKey)
-#                else:
-#                    listofSingleWord[phraseKey].updateFreq()
-#        
-#            # Get score for entire Set
-#            outputList = dict()
-#            for everyPhrase in newList:
-#        
-#                if len(everyPhrase) > 5:
-#                    continue
-#                score = 0
-#                phraseString = ''
-#                outStr = ''
-#                for everyWord in everyPhrase:
-#                    score += listofSingleWord[everyWord].returnScore()
-#                    phraseString += everyWord + '|'
-#                    outStr += everyWord
-#                phraseKey = phraseString[:-1]
-#                freq = listofSingleWord[phraseKey].getFreq()
-#                if meaningfulCount == 0:
-#                    #print('some error here')     # please check
-#                    continue
-#                elif freq / meaningfulCount < 0.01 and freq < 3 :
-#                    continue
-#                outputList[outStr] = score
-#        
-#            sorted_list = sorted(outputList.items(), key = operator.itemgetter(1), reverse = True)
-#            if len(sorted_list) > 0:
-#                sorted_list = [p[0] for p in sorted_list if len(p[0])>1]  # only return words without scores and words consisted by more than 1 word
-#            return sorted_list#[:10]
+            # Construct Phrase Deliminator Lib
+            conjLibList = delimiter[self.language_code]
+        
+            # Cut Text
+            rawtextList = pseg.cut(text)
+        
+            # Construct List of Phrases and Preliminary textList
+            textList = []
+            listofSingleWord = dict()
+            lastWord = ''
+            poSPrty = ['m','x','uj','ul','mq','u','v','f']
+            meaningfulCount = 0
+            checklist = []
+            for eachWord, flag in rawtextList:
+                checklist.append([eachWord,flag])
+                if eachWord in conjLibList or not self._notNumStr(eachWord) or eachWord in swLibList or flag in poSPrty or eachWord == '\n':
+                    if lastWord != '|':
+                        textList.append("|")
+                        lastWord = "|"
+                elif eachWord not in swLibList and eachWord != '\n':
+                    textList.append(eachWord)
+                    meaningfulCount += 1
+                    if eachWord not in listofSingleWord:
+                        listofSingleWord[eachWord] = Word(eachWord)
+                    lastWord = ''
+        
+            # Construct List of list that has phrases as wrds
+            newList = []
+            tempList = []
+            for everyWord in textList:
+                if everyWord != '|':
+                    tempList.append(everyWord)
+                else:
+                    newList.append(tempList)
+                    tempList = []
+        
+            tempStr = ''
+            for everyWord in textList:
+                if everyWord != '|':
+                    tempStr += everyWord + '|'
+                else:
+                    if tempStr[:-1] not in listofSingleWord:
+                        listofSingleWord[tempStr[:-1]] = Word(tempStr[:-1])
+                        tempStr = ''
+        
+            # Update the entire List
+            for everyPhrase in newList:
+                res = ''
+                for everyWord in everyPhrase:
+                    listofSingleWord[everyWord].updateOccur(len(everyPhrase))
+                    res += everyWord + '|'
+                phraseKey = res[:-1]
+                if phraseKey not in listofSingleWord:
+                    listofSingleWord[phraseKey] = Word(phraseKey)
+                else:
+                    listofSingleWord[phraseKey].updateFreq()
+        
+            # Get score for entire Set
+            outputList = dict()
+            for everyPhrase in newList:
+        
+                if len(everyPhrase) > 5:
+                    continue
+                score = 0
+                phraseString = ''
+                outStr = ''
+                for everyWord in everyPhrase:
+                    score += listofSingleWord[everyWord].returnScore()
+                    phraseString += everyWord + '|'
+                    outStr += everyWord
+                phraseKey = phraseString[:-1]
+                freq = listofSingleWord[phraseKey].getFreq()
+                if meaningfulCount == 0:
+                    #print('some error here')     # please check
+                    continue
+                elif freq / meaningfulCount < 0.01 and freq < 3 :
+                    continue
+                outputList[outStr] = score
+        
+            sorted_list = sorted(outputList.items(), key = operator.itemgetter(1), reverse = True)
+            if len(sorted_list) > 0:
+                sorted_list = [p[0] for p in sorted_list if len(p[0])>1]  # only return words without scores and words consisted by more than 1 word
+            return sorted_list#[:10]
     
     def _notNumStr(self, instr):
         for item in instr:
@@ -306,4 +315,3 @@ class Rake:
             word_score[item] = word_degree[item] / word_frequency[item]
 
         return word_score
-# test

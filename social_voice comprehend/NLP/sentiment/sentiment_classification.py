@@ -4,27 +4,27 @@ import warnings
 import re
 import nltk
 try:
-    from nltk.stem import WordNetLemmatizer
-    wnl = WordNetLemmatizer()
+    from nltk.corpus import stopwords
 except:
     nltk.download('punkt')
     nltk.download('stopwords')
     nltk.download('wordnet')
-    nltk.download('averaged_perceptron_tagger')
 from nltk.tokenize import word_tokenize
 from nltk.corpus import stopwords
 from nltk.stem import WordNetLemmatizer
 from nltk import pos_tag
-import joblib
-
+from sklearn.externals import joblib
+import jieba
 import os
-FILE = os.path.dirname(__file__)
+path = os.path.dirname(__file__)
 warnings.filterwarnings('ignore')
 
-vectorizer = joblib.load(os.path.join(FILE,"vectorizer.pkl"))
-model = joblib.load(os.path.join(FILE,"model.pkl"))
-vectorizer_zh = joblib.load(os.path.join(FILE,"vectorizer_zh.pkl"))
-model_zh = joblib.load(os.path.join(FILE,"model_zh.pkl"))
+vectorizer = joblib.load(os.path.join(path,"vectorizer.pkl"))
+model = joblib.load(os.path.join(path,"model.pkl"))
+
+vectorizer_zh = joblib.load(os.path.join(path,"vectorizer_zh.pkl"))
+ch2_zh = joblib.load(os.path.join(path,"ch2_zh.pkl"))
+model_zh = joblib.load(os.path.join(path,"model_zh.pkl"))
 
 # data preprocessing
 def data_clearing(comment):
@@ -73,7 +73,7 @@ def remove_info(comment):
         comment = re.sub(url_reg, '', comment)
     return comment
 
-
+# %% English
 def remove_sw(comment):
     stop_words = stopwords.words('english')
     sw = set(
@@ -105,8 +105,7 @@ def lemmatize_all(sentence):
             lem_list.append(word)
     return ' '.join(lem_list)
 
-
-# % Chinese
+# %% Chinese
 # import chinese stopwords
 sw_S = [line.rstrip('\n').strip() for line in open(os.path.join(path, 'F_total_tradition_stopwords_sentiment.txt'), 'r', encoding='utf-8-sig')]
 
@@ -119,12 +118,14 @@ def chinese_segmentation(comment):
     comment = [w.strip() for w in comment if w.strip() not in sw_S]
     comment = ' '.join(comment)
     return comment
+    
+# %%
 
 def pre_processing(comment, lan):
     if lan == 'en':
-        return (lemmatize_all(remove_sw(remove_info(comment_T))))
+        return lemmatize_all(remove_sw(remove_info(comment)))
     else:
-        return chinese_segmentation(remove_info(comment_T))
+        return chinese_segmentation(remove_info(comment))
 
 
 def sentiment_classify(comment):
@@ -137,12 +138,15 @@ def sentiment_classify(comment):
         result = int(model.predict(X_test))
     else:
         X_test = vectorizer_zh.transform(X_test0)
+        X_test = ch2_zh.transform(X_test)
         result = int(model_zh.predict(X_test))
         
     if result == 1:
         return ('positive')
     else:
         return ('negative')
+#    else:
+#        raise Exception("Invalid input: input must be a string.")
 
 ## usage
 # sentiment_classify('inMotion is a very good app! It makes life easier')

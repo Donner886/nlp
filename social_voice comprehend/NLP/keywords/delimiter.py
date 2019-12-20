@@ -1,3 +1,10 @@
+# -*- coding: utf-8 -*-
+"""
+Created on Mon Nov 18 09:53:53 2019
+
+@author: Cynthia
+"""
+
 from pyrsistent import freeze
 
 _delimiter = {
@@ -124,7 +131,9 @@ _delimiter = {
              '“',
              '、',
              '《',
-             '》'
+             '》',
+             '岂不是',
+             '有时候',
         },
     }
         
