@@ -36,7 +36,7 @@ import matplotlib.pyplot as plt
 from sklearn.metrics import confusion_matrix
 from sklearn.utils.multiclass import unique_labels
 from NLP.opencc import OpenCC
-from sklearn.externals import joblib
+import joblib
 
 path = os.path.dirname(__file__)
 warnings.filterwarnings('ignore')

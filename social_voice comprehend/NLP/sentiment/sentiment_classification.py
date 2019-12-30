@@ -4,16 +4,20 @@ import warnings
 import re
 import nltk
 try:
+    from nltk.stem import WordNetLemmatizer
     from nltk.corpus import stopwords
+    stop_words = stopwords.words('english')
+    wnl = WordNetLemmatizer()
 except:
     nltk.download('punkt')
     nltk.download('stopwords')
     nltk.download('wordnet')
+    nltk.download('averaged_perceptron_tagger')
 from nltk.tokenize import word_tokenize
 from nltk.corpus import stopwords
 from nltk.stem import WordNetLemmatizer
 from nltk import pos_tag
-from sklearn.externals import joblib
+import joblib
 import jieba
 import os
 path = os.path.dirname(__file__)

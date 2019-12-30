@@ -5,6 +5,8 @@ import re
 import nltk
 try:
     from nltk.stem import WordNetLemmatizer
+    from nltk.corpus import stopwords
+    stop_words = stopwords.words('english')
     wnl = WordNetLemmatizer()
 except:
     nltk.download('punkt')
