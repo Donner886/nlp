@@ -24,7 +24,7 @@ setup(
     author_email = 'linxr6@outlook.com',
     keywords = ['NLP', 'keywords extractions', 'sentiment analysis'],
     packages = find_packages(exclude=('text*',)),
-    package_data = {'':['*.txt', '*.pkl', '*.ttc', '*.xlsx']},
+    package_data = {'':['*.txt', '*.pkl', '*.ttc', '*.xlsx', '*.json']},
     include_package_data=True,
     install_requires=install_requires,
 
